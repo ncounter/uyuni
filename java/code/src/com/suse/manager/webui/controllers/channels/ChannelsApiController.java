@@ -90,7 +90,7 @@ public class ChannelsApiController {
         labels.add(ChannelFactory.lookupById(identifier).getLabel());
         ScheduleRepoSyncEvent event = new ScheduleRepoSyncEvent(labels, user.getId());
         MessageQueue.publish(event);
-        return json(response, "event");
+        return json(response, ResultJson.success());
     }
 
 }

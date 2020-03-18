@@ -24,6 +24,7 @@ import Notifications from "./notifications";
 import Organizations from "./organizations";
 import Salt from "./salt";
 import Shared from "./shared";
+import Software from "./software";
 import Systems from "./systems";
 import Virtualization from "./virtualization";
 import Visualization from "./visualization";
@@ -42,6 +43,7 @@ const pages = {
   ...Organizations,
   ...Salt,
   ...Shared,
+  ...Software,
   ...Systems,
   ...Virtualization,
   ...Visualization,
