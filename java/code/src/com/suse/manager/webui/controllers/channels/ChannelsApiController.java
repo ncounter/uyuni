@@ -14,25 +14,27 @@
  */
 package com.suse.manager.webui.controllers.channels;
 
-import static com.suse.manager.webui.controllers.channels.ChannelsUtils.generateChannelJson;
-import static com.suse.manager.webui.controllers.channels.ChannelsUtils.getPossibleBaseChannels;
-import static com.suse.manager.webui.utils.SparkApplicationHelper.json;
-import static com.suse.manager.webui.utils.SparkApplicationHelper.withUser;
-import static spark.Spark.get;
-
+import com.redhat.rhn.common.messaging.MessageQueue;
+import com.redhat.rhn.domain.channel.ChannelFactory;
 import com.redhat.rhn.domain.contentmgmt.ContentProjectFactory;
 import com.redhat.rhn.domain.user.User;
-
+import com.redhat.rhn.frontend.events.ScheduleRepoSyncEvent;
 import com.suse.manager.webui.utils.gson.ChannelsJson;
 import com.suse.manager.webui.utils.gson.ResultJson;
-
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-
 import spark.Request;
 import spark.Response;
+
+import static com.suse.manager.webui.controllers.channels.ChannelsUtils.generateChannelJson;
+import static com.suse.manager.webui.controllers.channels.ChannelsUtils.getPossibleBaseChannels;
+import static com.suse.manager.webui.utils.SparkApplicationHelper.json;
+import static com.suse.manager.webui.utils.SparkApplicationHelper.withOrgAdmin;
+import static com.suse.manager.webui.utils.SparkApplicationHelper.withUser;
+import static spark.Spark.get;
 
 /**
  * Spark controller for Channels Api.
@@ -44,8 +46,8 @@ public class ChannelsApiController {
 
     /** Invoked from Router. Init routes for ContentManagement Api.*/
     public static void initRoutes() {
-        get("/manager/api/channels",
-                withUser(ChannelsApiController::getAllChannels));
+        get("/manager/api/channels", withUser(ChannelsApiController::getAllChannels));
+        get("/manager/api/channels/sync-channel/:cid", withOrgAdmin(ChannelsApiController::resyncChannel));
     }
 
     /**
@@ -74,5 +76,21 @@ public class ChannelsApiController {
         return json(res, ResultJson.success(jsonChannelsFiltered));
     }
 
+    /**
+     * Endpoint to schedule a single reposync
+     *
+     * @param request the request
+     * @param response the response
+     * @param user the current user
+     * @return the json response
+     */
+    public static String resyncChannel(Request request, Response response, User user) {
+        Long identifier = Long.valueOf(request.params("cid"));
+        List<String> labels = new LinkedList<>();
+        labels.add(ChannelFactory.lookupById(identifier).getLabel());
+        ScheduleRepoSyncEvent event = new ScheduleRepoSyncEvent(labels, user.getId());
+        MessageQueue.publish(event);
+        return json(response, "event");
+    }
 
 }
