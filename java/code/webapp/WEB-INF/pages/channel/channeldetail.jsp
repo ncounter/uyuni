@@ -8,6 +8,18 @@
 <html:html>
     <body>
         <%@ include file="/WEB-INF/pages/common/fragments/channel/channel_header.jspf" %>
+
+        <!-- Schedule channel sync implementation in ReactJS -->
+        <div id="sync-channel"></div>
+        <script type="text/javascript">
+            window.csrfToken = '<c:out value="${csrf_token}" />';
+            spaImportReactPage('software/channels/sync-channel')
+                .then(function(module) {
+                    module.renderer('sync-channel', {channelId: '${channel.id}'})
+                }
+            );
+        </script>
+
         <html:form action="/channels/ChannelDetail" styleClass="form-horizontal">
         <rhn:csrf />
         <div class="panel panel-default">
