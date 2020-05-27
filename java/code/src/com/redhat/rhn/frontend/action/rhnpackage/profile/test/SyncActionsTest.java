@@ -91,7 +91,7 @@ public class SyncActionsTest extends RhnMockStrutsTestCase {
         addRequestParameter(RequestContext.SID, s1.getId().toString());
         addRequestParameter(RequestContext.SID + "_1", s2.getId().toString());
         addRequestParameter("time", String.valueOf(System.currentTimeMillis()));
-        addRequestParameter("use_date", Boolean.FALSE.toString());
+        addRequestParameter("use_date", Boolean.FALSE.toString()); // todo
         setRequestPathInfo("/systems/details/packages/profiles/SyncSystemsSubmit");
 
         addDispatchCall("schedulesync.jsp.schedulesync");
