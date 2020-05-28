@@ -16,6 +16,7 @@ package com.redhat.rhn.frontend.action.rhnpackage.ssm;
 
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -34,11 +35,13 @@ import org.apache.struts.action.DynaActionForm;
 import com.redhat.rhn.common.messaging.MessageQueue;
 import com.redhat.rhn.common.util.DatePicker;
 import com.redhat.rhn.domain.action.ActionChain;
+import com.redhat.rhn.domain.action.ActionFactory;
 import com.redhat.rhn.domain.user.User;
 import com.redhat.rhn.frontend.action.SetLabels;
 import com.redhat.rhn.frontend.dto.EssentialServerDto;
 import com.redhat.rhn.frontend.events.SsmInstallPackagesEvent;
 import com.redhat.rhn.frontend.struts.ActionChainHelper;
+import com.redhat.rhn.frontend.struts.MaintenanceWindowHelper;
 import com.redhat.rhn.frontend.struts.RequestContext;
 import com.redhat.rhn.frontend.struts.RhnHelper;
 import com.redhat.rhn.frontend.struts.RhnListAction;
@@ -46,6 +49,7 @@ import com.redhat.rhn.frontend.struts.SessionSetHelper;
 import com.redhat.rhn.frontend.struts.StrutsDelegate;
 import com.redhat.rhn.frontend.taglibs.list.helper.ListHelper;
 import com.redhat.rhn.frontend.taglibs.list.helper.Listable;
+import com.redhat.rhn.manager.ssm.SsmManager;
 import com.redhat.rhn.manager.system.SystemManager;
 import com.redhat.rhn.taskomatic.TaskomaticApi;
 
@@ -138,6 +142,9 @@ public class SchedulePackageInstallationAction extends RhnListAction implements
 
         // Pre-populate the Action Chain selector
         ActionChainHelper.prepopulateActionChains(request);
+
+        MaintenanceWindowHelper.prepopulateMaintenanceWindows(request, ActionFactory.TYPE_PACKAGES_UPDATE,
+                new HashSet<>(SsmManager.listServerIds(requestContext.getCurrentUser())));
 
         return strutsDelegate.forwardParams(
                 actionMapping.findForward(RhnHelper.DEFAULT_FORWARD), params);

@@ -20,6 +20,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -39,10 +41,12 @@ import com.redhat.rhn.common.localization.LocalizationService;
 import com.redhat.rhn.common.util.DatePicker;
 import com.redhat.rhn.common.util.StringUtil;
 import com.redhat.rhn.domain.action.ActionChain;
+import com.redhat.rhn.domain.action.ActionFactory;
 import com.redhat.rhn.domain.action.script.ScriptActionDetails;
 import com.redhat.rhn.domain.user.User;
 import com.redhat.rhn.frontend.dto.SystemOverview;
 import com.redhat.rhn.frontend.struts.ActionChainHelper;
+import com.redhat.rhn.frontend.struts.MaintenanceWindowHelper;
 import com.redhat.rhn.frontend.struts.RequestContext;
 import com.redhat.rhn.frontend.struts.RhnAction;
 import com.redhat.rhn.frontend.struts.RhnHelper;
@@ -261,6 +265,8 @@ public class ProvisioningRemoteCommand extends RhnAction implements
         request.setAttribute(
                 "date", this.getStrutsDelegate().prepopulateDatePicker(
                                 request, form, "date", DatePicker.YEAR_RANGE_POSITIVE));
+        Set<Long> systemIds = getSystemIds(context);
+        MaintenanceWindowHelper.prepopulateMaintenanceWindows(request, ActionFactory.TYPE_SCRIPT_RUN, systemIds);
         ActionChainHelper.prepopulateActionChains(request);
 
         ListHelper helper = new ListHelper(this, request);
@@ -340,5 +346,11 @@ public class ProvisioningRemoteCommand extends RhnAction implements
 
         context.getRequest().setAttribute("affectedSystemsCount", dataset.size());
         return dataset;
+    }
+
+    private Set<Long> getSystemIds(RequestContext context) {
+        return getResult(context).stream()
+                .map(dto -> dto.getId())
+                .collect(Collectors.toSet());
     }
 }

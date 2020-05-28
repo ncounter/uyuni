@@ -14,6 +14,8 @@
  */
 package com.redhat.rhn.frontend.action.configuration.files;
 
+import static com.redhat.rhn.domain.action.ActionFactory.TYPE_CONFIGFILES_DEPLOY;
+
 import com.redhat.rhn.common.db.datasource.DataResult;
 import com.redhat.rhn.common.util.DatePicker;
 import com.redhat.rhn.domain.config.ConfigChannel;
@@ -23,12 +25,16 @@ import com.redhat.rhn.frontend.action.configuration.ConfigActionHelper;
 import com.redhat.rhn.frontend.listview.PageControl;
 import com.redhat.rhn.frontend.struts.ActionChainHelper;
 import com.redhat.rhn.frontend.struts.BaseListAction;
+import com.redhat.rhn.frontend.struts.MaintenanceWindowHelper;
 import com.redhat.rhn.frontend.struts.RequestContext;
 import com.redhat.rhn.manager.configuration.ConfigurationManager;
 import com.redhat.rhn.manager.rhnset.RhnSetDecl;
 
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.DynaActionForm;
+
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * GlobalRevisionDeploySetup
@@ -64,6 +70,14 @@ public class GlobalRevisionDeployConfirmSetup extends BaseListAction {
         DatePicker picker = getStrutsDelegate().prepopulateDatePicker(ctxt.getRequest(),
                 dynaForm, "date", DatePicker.YEAR_RANGE_POSITIVE);
         ctxt.getRequest().setAttribute("date", picker);
+        Set<Long> systemIds = getSystemIds(ctxt);
+        MaintenanceWindowHelper.prepopulateMaintenanceWindows(ctxt.getRequest(), TYPE_CONFIGFILES_DEPLOY, systemIds);
         ActionChainHelper.prepopulateActionChains(ctxt.getRequest());
+    }
+
+    private Set<Long> getSystemIds(RequestContext ctxt) {
+        return RhnSetDecl.CONFIG_FILE_DEPLOY_SYSTEMS.get(ctxt.getCurrentUser()).getElements().stream()
+                .map(el -> el.getElement())
+                .collect(Collectors.toSet());
     }
 }

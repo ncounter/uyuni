@@ -15,15 +15,19 @@
 
 package com.redhat.rhn.frontend.action.rhnpackage;
 
+import static com.redhat.rhn.common.util.DatePicker.YEAR_RANGE_POSITIVE;
+
 import com.redhat.rhn.common.localization.LocalizationService;
 import com.redhat.rhn.common.util.DatePicker;
 import com.redhat.rhn.common.util.StringUtil;
 import com.redhat.rhn.domain.action.ActionChain;
+import com.redhat.rhn.domain.action.ActionFactory;
 import com.redhat.rhn.domain.action.rhnpackage.PackageAction;
 import com.redhat.rhn.domain.server.Server;
 import com.redhat.rhn.domain.user.User;
 import com.redhat.rhn.frontend.dto.PackageListItem;
 import com.redhat.rhn.frontend.struts.ActionChainHelper;
+import com.redhat.rhn.frontend.struts.MaintenanceWindowHelper;
 import com.redhat.rhn.frontend.struts.RequestContext;
 import com.redhat.rhn.frontend.struts.RhnAction;
 import com.redhat.rhn.frontend.struts.RhnHelper;
@@ -104,10 +108,12 @@ public abstract class BaseSystemPackagesConfirmAction extends RhnAction {
 
         DynaActionForm dynaForm = (DynaActionForm) formIn;
         DatePicker picker = getStrutsDelegate().prepopulateDatePicker(request, dynaForm,
-                "date", DatePicker.YEAR_RANGE_POSITIVE);
+                "date", YEAR_RANGE_POSITIVE);
         request.setAttribute("date", picker);
 
         ActionChainHelper.prepopulateActionChains(request);
+        MaintenanceWindowHelper.prepopulateMaintenanceWindows(request, ActionFactory.TYPE_PACKAGES_UPDATE, // todo also remove?
+                Set.of(server.getId()));
 
         request.setAttribute("system", server);
         requestContext.copyParamToAttributes(RequestContext.SID);

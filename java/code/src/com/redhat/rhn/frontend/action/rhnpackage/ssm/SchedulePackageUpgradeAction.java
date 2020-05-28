@@ -14,16 +14,20 @@
  */
 package com.redhat.rhn.frontend.action.rhnpackage.ssm;
 
+import static com.redhat.rhn.common.util.DatePicker.YEAR_RANGE_POSITIVE;
+
 import com.redhat.rhn.common.db.datasource.DataResult;
 import com.redhat.rhn.common.messaging.MessageQueue;
 import com.redhat.rhn.common.util.DatePicker;
 import com.redhat.rhn.domain.action.ActionChain;
+import com.redhat.rhn.domain.action.ActionFactory;
 import com.redhat.rhn.domain.rhnset.RhnSet;
 import com.redhat.rhn.domain.rhnset.SetCleanup;
 import com.redhat.rhn.domain.user.User;
 import com.redhat.rhn.frontend.dto.PackageListItem;
 import com.redhat.rhn.frontend.events.SsmUpgradePackagesEvent;
 import com.redhat.rhn.frontend.struts.ActionChainHelper;
+import com.redhat.rhn.frontend.struts.MaintenanceWindowHelper;
 import com.redhat.rhn.frontend.struts.RequestContext;
 import com.redhat.rhn.frontend.struts.RhnAction;
 import com.redhat.rhn.frontend.struts.RhnHelper;
@@ -34,6 +38,7 @@ import com.redhat.rhn.frontend.taglibs.list.helper.ListHelper;
 import com.redhat.rhn.frontend.taglibs.list.helper.Listable;
 import com.redhat.rhn.manager.rhnset.RhnSetDecl;
 import com.redhat.rhn.manager.rhnset.RhnSetManager;
+import com.redhat.rhn.manager.ssm.SsmManager;
 import com.redhat.rhn.manager.system.SystemManager;
 import com.redhat.rhn.taskomatic.TaskomaticApi;
 
@@ -49,6 +54,7 @@ import org.apache.struts.action.DynaActionForm;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -93,11 +99,14 @@ public class SchedulePackageUpgradeAction extends RhnAction implements Listable 
         // Pre-populate the date picker
         DynaActionForm dynaForm = (DynaActionForm) actionForm;
         DatePicker picker = getStrutsDelegate().prepopulateDatePicker(request, dynaForm,
-            "date", DatePicker.YEAR_RANGE_POSITIVE);
+            "date", YEAR_RANGE_POSITIVE);
         request.setAttribute("date", picker);
 
         // Pre-populate the Action Chain selector
         ActionChainHelper.prepopulateActionChains(request);
+
+        MaintenanceWindowHelper.prepopulateMaintenanceWindows(request, ActionFactory.TYPE_PACKAGES_UPDATE,
+                new HashSet<>(SsmManager.listServerIds(requestContext.getCurrentUser())));
 
         return actionMapping.findForward(RhnHelper.DEFAULT_FORWARD);
     }

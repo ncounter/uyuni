@@ -14,6 +14,8 @@
  */
 package com.redhat.rhn.frontend.action.systems.sdc;
 
+import static com.redhat.rhn.domain.action.ActionFactory.TYPE_REBOOT;
+
 import com.redhat.rhn.common.util.DatePicker;
 import com.redhat.rhn.domain.action.Action;
 import com.redhat.rhn.domain.action.ActionChain;
@@ -21,6 +23,7 @@ import com.redhat.rhn.domain.action.ActionFactory;
 import com.redhat.rhn.domain.server.Server;
 import com.redhat.rhn.domain.user.User;
 import com.redhat.rhn.frontend.struts.ActionChainHelper;
+import com.redhat.rhn.frontend.struts.MaintenanceWindowHelper;
 import com.redhat.rhn.frontend.struts.RequestContext;
 import com.redhat.rhn.frontend.struts.RhnAction;
 import com.redhat.rhn.frontend.struts.RhnHelper;
@@ -37,6 +40,7 @@ import org.apache.struts.action.DynaActionForm;
 
 import java.util.Date;
 import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -103,6 +107,7 @@ public class SystemRebootAction extends RhnAction {
         DatePicker picker = getStrutsDelegate().prepopulateDatePicker(request, form,
             "date", DatePicker.YEAR_RANGE_POSITIVE);
         request.setAttribute("date", picker);
+        MaintenanceWindowHelper.prepopulateMaintenanceWindows(request, TYPE_REBOOT, Set.of(server.getId()));
         ActionChainHelper.prepopulateActionChains(request);
 
         request.setAttribute(RequestContext.SID, sid);

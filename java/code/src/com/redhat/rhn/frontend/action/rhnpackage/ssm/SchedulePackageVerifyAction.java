@@ -14,7 +14,10 @@
  */
 package com.redhat.rhn.frontend.action.rhnpackage.ssm;
 
+import static com.redhat.rhn.domain.action.ActionFactory.TYPE_PACKAGES_VERIFY;
+
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -40,6 +43,7 @@ import com.redhat.rhn.domain.user.User;
 import com.redhat.rhn.frontend.dto.PackageListItem;
 import com.redhat.rhn.frontend.events.SsmVerifyPackagesEvent;
 import com.redhat.rhn.frontend.struts.ActionChainHelper;
+import com.redhat.rhn.frontend.struts.MaintenanceWindowHelper;
 import com.redhat.rhn.frontend.struts.RequestContext;
 import com.redhat.rhn.frontend.struts.RhnAction;
 import com.redhat.rhn.frontend.struts.RhnHelper;
@@ -50,6 +54,7 @@ import com.redhat.rhn.frontend.taglibs.list.helper.ListHelper;
 import com.redhat.rhn.frontend.taglibs.list.helper.Listable;
 import com.redhat.rhn.manager.rhnset.RhnSetDecl;
 import com.redhat.rhn.manager.rhnset.RhnSetManager;
+import com.redhat.rhn.manager.ssm.SsmManager;
 import com.redhat.rhn.manager.system.SystemManager;
 import com.redhat.rhn.taskomatic.TaskomaticApi;
 
@@ -136,6 +141,8 @@ public class SchedulePackageVerifyAction extends RhnAction implements Listable {
         request.setAttribute("date", picker);
 
         // Prepopulate the Action Chain selector
+        MaintenanceWindowHelper.prepopulateMaintenanceWindows(request, TYPE_PACKAGES_VERIFY,
+                new HashSet<>(SsmManager.listServerIds(requestContext.getCurrentUser())));
         ActionChainHelper.prepopulateActionChains(request);
 
         return actionMapping.findForward(RhnHelper.DEFAULT_FORWARD);

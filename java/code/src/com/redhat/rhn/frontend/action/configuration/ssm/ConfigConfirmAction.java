@@ -16,16 +16,22 @@ package com.redhat.rhn.frontend.action.configuration.ssm;
 
 import com.redhat.rhn.common.db.datasource.DataResult;
 import com.redhat.rhn.common.util.DatePicker;
+import com.redhat.rhn.domain.action.ActionFactory;
+import com.redhat.rhn.domain.action.ActionType;
 import com.redhat.rhn.domain.user.User;
 import com.redhat.rhn.frontend.listview.PageControl;
 import com.redhat.rhn.frontend.struts.ActionChainHelper;
 import com.redhat.rhn.frontend.struts.BaseListAction;
+import com.redhat.rhn.frontend.struts.MaintenanceWindowHelper;
 import com.redhat.rhn.frontend.struts.RequestContext;
 import com.redhat.rhn.manager.configuration.ConfigurationManager;
 import com.redhat.rhn.manager.rhnset.RhnSetDecl;
 
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.DynaActionForm;
+
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * DiffConfirmAction
@@ -63,11 +69,22 @@ public class ConfigConfirmAction extends BaseListAction {
             return; //no date picker on diff page
         }
 
-
         DynaActionForm dynaForm = (DynaActionForm) formIn;
         DatePicker picker = getStrutsDelegate().prepopulateDatePicker(ctxt.getRequest(),
                 dynaForm, "date", DatePicker.YEAR_RANGE_POSITIVE);
         ctxt.getRequest().setAttribute("date", picker);
+
+        ActionType actionType = ActionFactory.TYPE_CONFIGFILES_DEPLOY;
+        Set<Long> systems = getSystemIds(ctxt, actionType);
+        // we only handle 'deploy' actions, for 'diff' actions, we early return at the beginning of this method
+        MaintenanceWindowHelper.prepopulateMaintenanceWindows(ctxt.getRequest(), actionType, systems);
         ActionChainHelper.prepopulateActionChains(ctxt.getRequest());
+    }
+
+    private Set<Long> getSystemIds(RequestContext ctxt, ActionType actionType) {
+        ConfigurationManager cm = ConfigurationManager.getInstance();
+        return cm.listSystemsForConfigAction(ctxt.getCurrentUser(), null, actionType.getLabel()).stream()
+                .map(dto -> dto.getId())
+                .collect(Collectors.toSet());
     }
 }
