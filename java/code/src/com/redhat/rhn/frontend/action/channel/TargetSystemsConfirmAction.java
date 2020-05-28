@@ -131,7 +131,7 @@ public class TargetSystemsConfirmAction extends RhnAction implements Listable {
             return;
         }
 
-        Date scheduleDate = getStrutsDelegate().readDatePicker(
+        Date scheduleDate = getStrutsDelegate().readScheduleDate(
                 form, "date", DatePicker.YEAR_RANGE_POSITIVE);
         ActionChain actionChain = ActionChainHelper.readActionChain(form, user);
 

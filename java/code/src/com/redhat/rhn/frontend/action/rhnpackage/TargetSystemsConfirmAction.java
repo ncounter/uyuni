@@ -154,7 +154,7 @@ public class TargetSystemsConfirmAction extends RhnAction {
 
         //The earliest time to perform the action.
         DynaActionForm dynaActionForm = (DynaActionForm) formIn;
-        Date earliest = getStrutsDelegate().readDatePicker(dynaActionForm, "date",
+        Date earliest = getStrutsDelegate().readScheduleDate(dynaActionForm, "date",
                 DatePicker.YEAR_RANGE_POSITIVE);
 
         //The action chain to append this action to, if any

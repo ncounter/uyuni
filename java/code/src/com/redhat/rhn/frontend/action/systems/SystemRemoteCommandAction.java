@@ -249,7 +249,7 @@ public class SystemRemoteCommandAction extends RhnAction {
     private Set<Action> scheduleScript(DynaActionForm form,
                                 User user,
                                 Server server) throws TaskomaticApiException {
-        Date scheduleDate = getStrutsDelegate().readDatePicker(
+        Date scheduleDate = getStrutsDelegate().readScheduleDate(
                 form, "date", DatePicker.YEAR_RANGE_POSITIVE);
         ActionChain actionChain = ActionChainHelper.readActionChain(form, user);
         List<Long> servers = new ArrayList<Long>();
