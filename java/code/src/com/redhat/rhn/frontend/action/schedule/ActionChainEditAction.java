@@ -24,7 +24,10 @@ import com.redhat.rhn.common.util.DatePicker;
 import com.redhat.rhn.domain.action.ActionChain;
 import com.redhat.rhn.domain.action.ActionChainEntryGroup;
 import com.redhat.rhn.domain.action.ActionChainFactory;
+import com.redhat.rhn.domain.action.ActionFactory;
+import com.redhat.rhn.domain.action.ActionType;
 import com.redhat.rhn.domain.user.User;
+import com.redhat.rhn.frontend.struts.MaintenanceWindowHelper;
 import com.redhat.rhn.frontend.struts.RequestContext;
 import com.redhat.rhn.frontend.struts.RhnAction;
 import com.redhat.rhn.frontend.struts.RhnHelper;
@@ -42,6 +45,8 @@ import org.hibernate.ObjectNotFoundException;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -171,6 +176,20 @@ public class ActionChainEditAction extends RhnAction {
         request.setAttribute(GROUPS_ATTRIBUTE, groups);
         DatePicker datePicker = getStrutsDelegate().prepopulateDatePicker(request, form,
             DATE_ATTRIBUTE, DatePicker.YEAR_RANGE_POSITIVE);
+
+        // todo complexity? jpql for that?
+        Set<Long> systemIds = actionChain.getEntries().stream()
+                .map(e -> e.getServer().getId())
+                .collect(Collectors.toSet());
+        boolean hasMaintModeOnlyActions = actionChain.getEntries().stream()
+                .filter(e -> e.getAction().getActionType().isMaintenancemodeOnly())
+                .findFirst()
+                .isPresent();
+
+        // todo THIS IS JUST FOR TESTING! REWRITE THE prepopulateMaintenanceWindows to accept bool?
+        // or write another method
+        ActionType actionType = hasMaintModeOnlyActions ? ActionFactory.TYPE_REBOOT : ActionFactory.TYPE_SUBSCRIBE_CHANNELS;
+        MaintenanceWindowHelper.prepopulateMaintenanceWindows(request, actionType, systemIds);
         request.setAttribute(DATE_ATTRIBUTE, datePicker);
     }
 }
