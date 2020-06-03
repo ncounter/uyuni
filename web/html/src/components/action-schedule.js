@@ -69,36 +69,43 @@ class ActionSchedule extends React.Component<ActionScheduleProps, ActionSchedule
   }
 
   UNSAFE_componentWillMount = () => {
-    // console.log("this.props.systemIds : " + this.state.systemIds)
-    const postData = JSON.stringify({
+    if (this.state.systemIds && this.state.actionType) {
+      const postData = JSON.stringify({
         systemIds: this.state.systemIds,
         actionType: this.state.actionType,
-    });
-    Network.post("/rhn/manager/api/maintenance-windows", postData, "application/json").promise
-      .then(data =>
-        {
-          if (data.maintenanceWindows) {
-            this.setState({
-              loading: false,
-              maintenanceWindow: data.maintenanceWindows[0],
-              maintenanceWindows: data.maintenanceWindows,
-              isMaintenanceModeEnabled: true
-            });
+      });
+      Network.post("/rhn/manager/api/maintenance-windows", postData, "application/json").promise
+        .then(data =>
+          {
+            if (data.maintenanceWindows) {
+              this.setState({
+                loading: false,
+                maintenanceWindow: data.maintenanceWindows[0],
+                maintenanceWindows: data.maintenanceWindows,
+                isMaintenanceModeEnabled: true
+              });
+            }
+            else {
+              this.setState({
+                loading: false,
+                isMaintenanceModeEnabled: false
+              });
+            }
           }
-          else {
-            this.setState({
-              loading: false,
-              isMaintenanceModeEnabled: false
-            });
-          }
-        }
-      ).catch(this.handleResponseError);
-  }
+        ).catch(this.handleResponseError);
+    }
+    else {
+      this.setState({
+        loading: false,
+        isMaintenanceModeEnabled: false
+      });
+    }
+  };
 
   handleResponseError = (jqXHR) => {
     console.log(Network.responseErrorMessage(jqXHR));
     this.setState({ loading: false });
-  }
+  };
 
   onDateTimeChanged = (date: Date) => {
     this.setState({
