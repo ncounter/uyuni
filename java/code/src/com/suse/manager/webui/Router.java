@@ -14,13 +14,6 @@
  */
 package com.suse.manager.webui;
 
-import static com.suse.manager.webui.utils.SparkApplicationHelper.setup;
-import static com.suse.manager.webui.utils.SparkApplicationHelper.withUser;
-import static spark.Spark.exception;
-import static spark.Spark.get;
-import static spark.Spark.notFound;
-import static spark.Spark.post;
-
 import com.redhat.rhn.taskomatic.TaskomaticApi;
 import com.suse.manager.kubernetes.KubernetesManager;
 import com.suse.manager.virtualization.VirtManagerSalt;
@@ -60,17 +53,22 @@ import com.suse.manager.webui.controllers.virtualization.VirtualNetsController;
 import com.suse.manager.webui.controllers.virtualization.VirtualPoolsController;
 import com.suse.manager.webui.errors.NotFoundException;
 import com.suse.manager.webui.services.iface.SaltApi;
+import com.suse.manager.webui.services.iface.SystemQuery;
 import com.suse.manager.webui.services.iface.VirtManager;
 import com.suse.manager.webui.services.impl.SaltService;
-import com.suse.manager.webui.services.iface.SystemQuery;
-import org.apache.http.HttpStatus;
-
 import java.util.HashMap;
 import java.util.Map;
-
+import org.apache.http.HttpStatus;
 import spark.ModelAndView;
 import spark.servlet.SparkApplication;
 import spark.template.jade.JadeTemplateEngine;
+
+import static com.suse.manager.webui.utils.SparkApplicationHelper.setup;
+import static com.suse.manager.webui.utils.SparkApplicationHelper.withUser;
+import static spark.Spark.exception;
+import static spark.Spark.get;
+import static spark.Spark.notFound;
+import static spark.Spark.post;
 
 /**
  * Router class defining the web UI routes.
