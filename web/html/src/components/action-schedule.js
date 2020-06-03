@@ -30,7 +30,8 @@ type ActionScheduleProps = {
   actionChains: Array<ActionChain>,
   onDateTimeChanged: (date: Date) => void,
   onActionChainChanged: (actionChain: ?ActionChain) => void,
-  systemIds: Array<number>
+  systemIds: Array<number>,
+  actionType: string,
 };
 
 type ActionScheduleState = {
@@ -41,21 +42,10 @@ type ActionScheduleState = {
   actionChains: Array<ActionChain>,
   isMaintenanceModeEnabled: boolean,
   maintenanceWindow: MaintenanceWindow,
-  maintenanceWindows: Array<MaintenanceWindow>
+  maintenanceWindows: Array<MaintenanceWindow>,
+  systemIds: Array<number>,
+  actionType: string,
 };
-
-var MWs = [
-  {
-    id: new Date("2020-06-11T10:00:00Z").getTime(),
-    from: Functions.Formats.LocalDateTime(new Date("2020-06-11T10:00:00Z")),
-    to: Functions.Formats.LocalDateTime(new Date("2020-06-11T20:00:00Z"))
-  },
-  {
-    id: new Date("2020-10-23T02:00:00Z").getTime(),
-    from: Functions.Formats.LocalDateTime(new Date("2020-10-23T02:00:00Z")),
-    to: Functions.Formats.LocalDateTime(new Date("2020-10-23T14:00:00Z"))
-  }
-];
 
 class ActionSchedule extends React.Component<ActionScheduleProps, ActionScheduleState> {
 
@@ -70,20 +60,28 @@ class ActionSchedule extends React.Component<ActionScheduleProps, ActionSchedule
       earliest: props.earliest,
       actionChain: props.actionChains.length > 0 ? props.actionChains[0] : this.newActionChainOpt,
       actionChains: props.actionChains.length > 0 ? props.actionChains : [this.newActionChainOpt],
-      isMaintenanceModeEnabled: MWs.length > 0,
-      maintenanceWindow: MWs[0],
-      maintenanceWindows: MWs,
+      isMaintenanceModeEnabled: false,
+      maintenanceWindow: {},
+      maintenanceWindows: [],
+      systemIds: props.systemIds,
+      actionType: props.actionType,
     };
   }
 
-  componentWillMount = () => {
-    const systemIds = this.props.systemIds;
-    Network.get("/rhn/manager/api/maintenance-windows", systemIds, "application/json").promise
+  UNSAFE_componentWillMount = () => {
+    // console.log("this.props.systemIds : " + this.state.systemIds)
+    const postData = JSON.stringify({
+        systemIds: this.state.systemIds,
+        actionType: this.state.actionType,
+    });
+    Network.post("/rhn/manager/api/maintenance-windows", postData, "application/json").promise
       .then(data =>
         {
           this.setState({
             loading: false,
-            maintenanceWindow: data.maintenanceWindows
+            maintenanceWindows: data.maintenanceWindows,
+            maintenanceWindow: data.maintenanceWindows ? data.maintenanceWindows[0] : {},
+            isMaintenanceModeEnabled: data.maintenanceWindows && data.maintenanceWindows.length > 0
           });
         }
       ).catch(this.handleResponseError);
@@ -111,11 +109,11 @@ class ActionSchedule extends React.Component<ActionScheduleProps, ActionSchedule
   }
 
   onSelectMaintenanceWindow = (event: Object) => {
-    this.onMaintenanceWindowChanged(MWs.filter(mw => mw.id == event.target.value)[0]);
+    this.onMaintenanceWindowChanged(this.state.maintenanceWindows.filter(mw => mw.id == event.target.value)[0]);
   }
 
   onFocusMaintenanceWindow = (event: Object) => {
-    this.onMaintenanceWindowChanged(MWs.filter(mw => mw.id == event.target.value)[0]);
+    this.onMaintenanceWindowChanged(this.state.maintenanceWindows.filter(mw => mw.id == event.target.value)[0]);
   }
 
   onActionChainChanged = (selectedItem: ActionChain) => {
@@ -165,23 +163,23 @@ class ActionSchedule extends React.Component<ActionScheduleProps, ActionSchedule
               <input type="radio" name="use_date" value="true" checked={this.state.type == "earliest"} id="schedule-by-date" onChange={this.onSelectEarliest} />
               <label htmlFor="schedule-by-date">{!this.state.isMaintenanceModeEnabled ?t("Earliest:") : t("Maintenance Window:")}</label>
             </div>
-            <div className="col-sm-3">
-              <select
-                  id="maintenance-window"
-                  className="form-control"
-                  name="maintenance_window"
-                  onChange={this.onSelectMaintenanceWindow}
-                  onFocus={this.onFocusMaintenanceWindow}>
-                { this.state.maintenanceWindows.map(mw =><option key={mw.id} value={mw.id}> {mw.from + " - " + mw.to}</option>) }
-              </select>
-            </div>
-            <div className="col-sm-6">
               {
                 !this.state.isMaintenanceModeEnabled ?
-                  <DateTimePicker onChange={this.onDateTimeChanged} value={this.state.earliest} timezone={this.props.timezone} />
-                  : null
+                  <div className="col-sm-6">
+                    <DateTimePicker onChange={this.onDateTimeChanged} value={this.state.earliest} timezone={this.props.timezone} />
+                  </div>
+                  :
+                  <div className="col-sm-3">
+                    <select
+                        id="maintenance-window"
+                        className="form-control"
+                        name="maintenance_window"
+                        onChange={this.onSelectMaintenanceWindow}
+                        onFocus={this.onFocusMaintenanceWindow}>
+                      { this.state.maintenanceWindows.map(mw =><option key={mw.id} value={mw.id}> {mw.from + " - " + mw.to}</option>) }
+                    </select>
+                  </div>
               }
-            </div>
           </div>
           <div className="form-group">
             <div className="col-sm-3 control-label">

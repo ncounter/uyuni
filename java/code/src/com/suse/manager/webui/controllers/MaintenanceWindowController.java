@@ -21,12 +21,16 @@ import static spark.Spark.post;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.redhat.rhn.domain.action.ActionFactory;
+import com.redhat.rhn.domain.action.ActionType;
 import com.redhat.rhn.domain.user.User;
+import com.suse.manager.maintenance.MaintenanceManager;
 import com.suse.manager.reactor.utils.LocalDateTimeISOAdapter;
 import com.suse.manager.reactor.utils.OptionalTypeAdapterFactory;
 import com.suse.manager.webui.utils.gson.ResultJson;
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -68,8 +72,9 @@ public class MaintenanceWindowController {
      * @return the json response
      */
     public static String getMaintenanceWindows(Request req, Response res, User user) {
+        Map<String, Object> map = GSON.fromJson(req.body(), Map.class);
         Set<Long> systemIds = Stream.of(
-                req.queryParams("systemIds").split(","))
+                map.get("systemIds").toString().split(","))
                 .flatMap(id -> {
                     try {
                         return Stream.of(Long.valueOf(id));
@@ -79,17 +84,18 @@ public class MaintenanceWindowController {
                     }
                 }).collect(Collectors.toSet());
 
-        Map<Long, Set<List<Triple<String, String, Long>>>> mws = new HashMap<>();
-//        MaintenanceManager.instance()
-//                .calculateUpcomingMaintenanceWindows(actionType, systemIds)
-//                .ifPresent(windows -> {
-//                    request.setAttribute(DatePicker.SCHEDULE_TYPE, DatePicker.ScheduleType.ACTION_CHAIN.toString());
-//                    request.setAttribute("maintenanceWindows", windows);
-//                });
+        String actionTypeLabel = map.get("actionType").toString();
+        List<Triple<String, String, Long>> mws = new LinkedList<>();
+        ActionType actionType = ActionFactory.lookupActionTypeByLabel(actionTypeLabel);
+
+        MaintenanceManager.instance()
+                .calculateUpcomingMaintenanceWindows(actionType, systemIds)
+                .ifPresent(windows -> {
+                    mws.addAll(windows);
+                });
 
         Map<String, Object> data = new HashMap<>();
         data.put("maintenance-windows", mws);
-        data.put("success", true);
         res.type("application/json");
         return json(res, ResultJson.success(data));
     }
