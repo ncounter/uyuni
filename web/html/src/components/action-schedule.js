@@ -30,8 +30,8 @@ type ActionScheduleProps = {
   actionChains: Array<ActionChain>,
   onDateTimeChanged: (date: Date) => void,
   onActionChainChanged: (actionChain: ?ActionChain) => void,
-  systemIds: Array<number>,
-  actionType: string,
+  systemIds?: Array<number>,
+  actionType?: string,
 };
 
 type ActionScheduleState = {
@@ -63,8 +63,8 @@ class ActionSchedule extends React.Component<ActionScheduleProps, ActionSchedule
       isMaintenanceModeEnabled: false,
       maintenanceWindow: {},
       maintenanceWindows: [],
-      systemIds: props.systemIds,
-      actionType: props.actionType,
+      systemIds: props.systemIds ? props.systemIds : [],
+      actionType: props.actionType ? props.actionType : "",
     };
   }
 
@@ -77,12 +77,20 @@ class ActionSchedule extends React.Component<ActionScheduleProps, ActionSchedule
     Network.post("/rhn/manager/api/maintenance-windows", postData, "application/json").promise
       .then(data =>
         {
-          this.setState({
-            loading: false,
-            maintenanceWindows: data.maintenanceWindows,
-            maintenanceWindow: data.maintenanceWindows ? data.maintenanceWindows[0] : {},
-            isMaintenanceModeEnabled: data.maintenanceWindows && data.maintenanceWindows.length > 0
-          });
+          if (data.maintenanceWindows) {
+            this.setState({
+              loading: false,
+              maintenanceWindow: data.maintenanceWindows[0],
+              maintenanceWindows: data.maintenanceWindows,
+              isMaintenanceModeEnabled: true
+            });
+          }
+          else {
+            this.setState({
+              loading: false,
+              isMaintenanceModeEnabled: false
+            });
+          }
         }
       ).catch(this.handleResponseError);
   }
