@@ -1,3 +1,4 @@
+- Upgrade prismjs - CVE-2020-15138
 - Upgrade serialize-javascript - CVE-2020-7660
 - Upgrade elliptic - CVE-2020-13822
 - Add gettext-parser and node-gettext
