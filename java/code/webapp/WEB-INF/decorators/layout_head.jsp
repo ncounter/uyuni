@@ -26,10 +26,12 @@
 
     <c:set var="cb_version" value="${rhn:getConfig('web.buildtimestamp')}" />
 
-<!-- import default fonts/icons styles -->
+    <!-- import default fonts/icons styles -->
     <link rel="stylesheet" href="/fonts/font-awesome/css/font-awesome.css?cb=${cb_version}" />
     <!-- import custom fonts/icons styles -->
     <link rel="stylesheet" href="/fonts/font-spacewalk/css/spacewalk-font.css?cb=${cb_version}" />
+    <!-- import eos-icons -->
+    <link rel="stylesheet" href="/css/eos-icons/css/eos-icons.css?cb=${cb_version}" />
 
     <!-- import plugins styles -->
     <link rel="stylesheet" href="/css/jquery.timepicker.css?cb=${cb_version}" />
