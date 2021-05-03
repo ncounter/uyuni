@@ -131,7 +131,17 @@ function IconTag(props: Props) {
     "system-warn": "fa fa-exclamation-triangle fa-1-5x text-warning",
   };
 
-  return <i className={icons[props.type] + " " + (props.className ?? "")} title={props.title}></i>;
+  if (Object.keys(icons).includes(props.type)) {
+    if (icons[props.type].label) {
+      return <i className={"eos-icons " + (icons[props.type].styles ?? "") + " " + (props.className ?? "")} title={props.title}>{icons[props.type].label}</i>;
+    }
+    else {
+      return <i className={"fa " + icons[props.type] + " " + (props.className ?? "")} title={props.title}></i>;
+    }
+  }
+  else {
+    return <i className={"fa " + props.type} />;
+  }
 }
 
 export { IconTag };
